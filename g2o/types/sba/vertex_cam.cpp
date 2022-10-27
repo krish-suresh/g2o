@@ -26,6 +26,10 @@
 
 #include "vertex_cam.h"
 
+#ifdef G2O_HAVE_OPENGL
+#include "g2o/stuff/opengl_primitives.h"
+#include "g2o/stuff/opengl_wrapper.h"
+#endif
 namespace g2o {
 
 // constructor
@@ -74,6 +78,101 @@ bool VertexCam::write(std::ostream& os) const {
   os << cam.Kcam(1, 2) << " ";
   os << cam.baseline << " ";
   return os.good();
+}
+
+#ifdef G2O_HAVE_OPENGL
+VertexCamDrawAction::VertexCamDrawAction()
+    : DrawAction(typeid(VertexCam).name()), _pointSize(nullptr) {}
+
+bool VertexCamDrawAction::refreshPropertyPtrs(
+    HyperGraphElementAction::Parameters* params_) {
+  if (!DrawAction::refreshPropertyPtrs(params_)) return false;
+  if (_previousParams) {
+    _pointSize = _previousParams->makeProperty<FloatProperty>(
+        _typeName + "::POINT_SIZE", 1.);
+  } else {
+    _pointSize = nullptr;
+  }
+  return true;
+}
+
+HyperGraphElementAction* VertexCamDrawAction::operator()(
+    HyperGraph::HyperGraphElement* element,
+    HyperGraphElementAction::Parameters* params) {
+  if (typeid(*element).name() != _typeName) return nullptr;
+  initializeDrawActionsCache();
+  refreshPropertyPtrs(params);
+  if (!_previousParams) return this;
+
+  if (_show && !_show->value()) return this;
+  VertexCam* that = static_cast<VertexCam*>(element);
+  glPushMatrix();
+  glPushAttrib(GL_ENABLE_BIT | GL_POINT_BIT);
+  glDisable(GL_LIGHTING);
+  glColor3f(POSE_VERTEX_COLOR);
+  // float ps = _pointSize ? _pointSize->value() : 1.f;
+  // g2o::AngleAxis rotation = (g2o::AngleAxis)that->estimate().rotation();
+  // glRotatef((float)rotation.angle(), (float)rotation.axis().x(), (float)rotation.axis().y(), (float)rotation.axis().z());
+  // glTranslatef((float)that->estimate().translation()(0), (float)that->estimate().translation()(1),
+  //              (float)that->estimate().translation()(2));
+  // opengl::drawPoint(ps);
+  // opengl::drawSphere(0.05f);
+  double len = 0.25;
+  Eigen::Vector3d origin(0,0,0);
+  Eigen::Vector3d xaxis(len,0,0);
+  Eigen::Vector3d yaxis(0,len,0);
+  Eigen::Vector3d zaxis(0,0,len);
+  auto pose = that->estimate();
+  origin = pose*origin;
+  xaxis = pose*xaxis;
+  yaxis = pose*yaxis;
+  zaxis = pose*zaxis;
+
+  glBegin(GL_LINES);
+  glColor3f(1,0,0);
+  glVertex3f(origin.x(), origin.y(), origin.z());
+  glVertex3f(xaxis.x(), xaxis.y(), xaxis.z());
+  glEnd();
+
+  glBegin(GL_LINES);
+  glColor3f(0,1,0);
+  glVertex3f(origin.x(), origin.y(), origin.z());
+  glVertex3f(yaxis.x(), yaxis.y(), yaxis.z());
+  glEnd();
+
+  glBegin(GL_LINES);
+  glColor3f(0,0,1);
+  glVertex3f(origin.x(), origin.y(), origin.z());
+  glVertex3f(zaxis.x(), zaxis.y(), zaxis.z());
+  glEnd();
+
+  glPopAttrib();
+  drawCache(that->cacheContainer(), params);
+  drawUserData(that->userData(), params);
+  glPopMatrix();
+  return this;
+}
+#endif
+
+VertexCamWriteGnuplotAction::VertexCamWriteGnuplotAction()
+    : WriteGnuplotAction(typeid(VertexCam).name()) {}
+
+HyperGraphElementAction* VertexCamWriteGnuplotAction::operator()(
+    HyperGraph::HyperGraphElement* element,
+    HyperGraphElementAction::Parameters* params_) {
+  if (typeid(*element).name() != _typeName) return nullptr;
+  WriteGnuplotAction::Parameters* params =
+      static_cast<WriteGnuplotAction::Parameters*>(params_);
+  if (!params->os) {
+    std::cerr << __PRETTY_FUNCTION__ << ": warning, no valid os specified"
+              << std::endl;
+    return nullptr;
+  }
+
+  VertexCam* v = static_cast<VertexCam*>(element);
+  *(params->os) << v->estimate().translation().x() << " " << v->estimate().translation().y() << " "
+                << v->estimate().translation().z() << " " << std::endl;
+  return this;
 }
 
 }  // namespace g2o

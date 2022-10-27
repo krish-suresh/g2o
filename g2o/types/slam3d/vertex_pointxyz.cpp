@@ -76,10 +76,11 @@ HyperGraphElementAction* VertexPointXYZDrawAction::operator()(
   glPushAttrib(GL_ENABLE_BIT | GL_POINT_BIT);
   glDisable(GL_LIGHTING);
   glColor3f(LANDMARK_VERTEX_COLOR);
-  float ps = _pointSize ? _pointSize->value() : 1.f;
+  // float ps = _pointSize ? _pointSize->value() : 1.f;
   glTranslatef((float)that->estimate()(0), (float)that->estimate()(1),
                (float)that->estimate()(2));
-  opengl::drawPoint(ps);
+  // opengl::drawPoint(ps);
+  opengl::drawSphere(0.05f);
   glPopAttrib();
   drawCache(that->cacheContainer(), params);
   drawUserData(that->userData(), params);

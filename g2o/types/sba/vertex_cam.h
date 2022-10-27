@@ -30,7 +30,7 @@
 #include "g2o/core/base_vertex.h"
 #include "g2o_types_sba_api.h"
 #include "sbacam.h"
-
+#include "g2o/core/hyper_graph_action.h"
 namespace g2o {
 
 /**
@@ -93,6 +93,32 @@ class G2O_TYPES_SBA_API VertexCam : public BaseVertex<6, SBACam> {
 
   virtual int minimalEstimateDimension() const { return 6; }
 };
+
+class G2O_TYPES_SLAM3D_API VertexCamWriteGnuplotAction
+    : public WriteGnuplotAction {
+ public:
+  VertexCamWriteGnuplotAction();
+  virtual HyperGraphElementAction* operator()(
+      HyperGraph::HyperGraphElement* element,
+      HyperGraphElementAction::Parameters* params_);
+};
+#ifdef G2O_HAVE_OPENGL
+/**
+ * \brief visualize a 3D point
+ */
+class VertexCamDrawAction : public DrawAction {
+ public:
+  VertexCamDrawAction();
+  virtual HyperGraphElementAction* operator()(
+      HyperGraph::HyperGraphElement* element,
+      HyperGraphElementAction::Parameters* params_);
+
+ protected:
+  FloatProperty* _pointSize;
+  virtual bool refreshPropertyPtrs(
+      HyperGraphElementAction::Parameters* params_);
+};
+#endif
 }  // namespace g2o
 
 #endif
