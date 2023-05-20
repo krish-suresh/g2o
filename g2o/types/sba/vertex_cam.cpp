@@ -109,14 +109,16 @@ HyperGraphElementAction* VertexCamDrawAction::operator()(
   glPushMatrix();
   glPushAttrib(GL_ENABLE_BIT | GL_POINT_BIT);
   glDisable(GL_LIGHTING);
+  glColor3f(POSE_EDGE_COLOR);
+  if (that->estimate().baseline == 1) {
+    glTranslatef((float)that->estimate().translation()(0), (float)that->estimate().translation()(1),
+                (float)that->estimate().translation()(2));
+    // opengl::drawPoint(ps);
+    opengl::drawSphere(0.05f);
+    glTranslatef(-(float)that->estimate().translation()(0), -(float)that->estimate().translation()(1),
+                -(float)that->estimate().translation()(2));
+  }
   glColor3f(POSE_VERTEX_COLOR);
-  // float ps = _pointSize ? _pointSize->value() : 1.f;
-  // g2o::AngleAxis rotation = (g2o::AngleAxis)that->estimate().rotation();
-  // glRotatef((float)rotation.angle(), (float)rotation.axis().x(), (float)rotation.axis().y(), (float)rotation.axis().z());
-  // glTranslatef((float)that->estimate().translation()(0), (float)that->estimate().translation()(1),
-  //              (float)that->estimate().translation()(2));
-  // opengl::drawPoint(ps);
-  // opengl::drawSphere(0.05f);
   double len = 0.25;
   Eigen::Vector3d origin(0,0,0);
   Eigen::Vector3d xaxis(len,0,0);

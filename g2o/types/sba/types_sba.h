@@ -35,9 +35,9 @@
 #include "edge_project_p2sc.h"
 #include "edge_sba_cam.h"
 #include "edge_sba_scale.h"
+#include "edge_sbacam_gravity.h"
 #include "g2o/types/slam3d/vertex_pointxyz.h"
 #include "sbacam.h"
 #include "vertex_cam.h"
 #include "vertex_intrinsics.h"
-
 #endif  // SBA_TYPES

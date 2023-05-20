@@ -11,6 +11,7 @@ add_library(types_sba ${G2O_LIB_TYPE}
   edge_sba_scale.cpp edge_sba_scale.h
   edge_project_p2mc.cpp edge_project_p2mc.h
   edge_project_p2sc.cpp edge_project_p2sc.h
+  edge_sbacam_gravity.h
   # other types
   sbacam.cpp sbacam.h
   # six_dof_expmap parameters
